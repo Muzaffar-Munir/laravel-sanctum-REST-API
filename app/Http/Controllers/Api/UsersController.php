@@ -17,23 +17,28 @@ class UsersController extends Controller
     //  getting list of users on index for route get-users defined in api.php
     public function index()
     {
-        $users= User::get();
+        $users = User::get();
         /**
          * for API we send Json for now i am just returning value to speedup things
          */
         return $users;
     }
-    public function login(){
-        $user = User::findOrFail(1);
-        $token = $user->createToken('token-name');
-
-        return $token->plainTextToken;
+    public function login(Request $request)
+    {
+        $user = User::where('email',$request->email)->where('password', $request->password)->first();
+        if ($user) {
+            $token = $user->createToken('token-name');
+            return $token->plainTextToken;
+        } else {
+            return 'not found';
+        }
     }
 
     /**
      * protected route method implementation
      */
-    public function protectedRoute(){
+    public function protectedRoute(Request $request)
+    {
         return 'string from protected route';
     }
     /**
@@ -54,7 +59,16 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = new User;
+        if($request->name && $request->email && $request->password){
+            $user->name=$request->name;
+            $user->email=$request->email;
+            $user->password=$request->password;
+            $user->save();
+            return  response()->json(['user' => $user], 200);
+        } else{
+            return "name , email, password is required parameter";
+        }
     }
 
     /**
@@ -74,9 +88,29 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Request $request)
     {
         //
+        $id= auth()->user()->id;
+        $user= User::findOrFail($id);
+        // if($request->name){
+        //     $user->name=$request->name;
+        // } if($user->email){
+        //     $user->email= $request->email;
+        // } if($user->password){
+        //     $user->password =$request->passthru
+        // }
+
+        if($request->name || $request->email || $request->password){
+
+            $user->name=isset($request->name) ? $request->name : $user->name;
+            $user->email=isset($request->email) ? $request->name : $user->email;
+            $user->password=isset($request->password) ? $request->password : $user->password;
+            $user->save();
+            return $user;
+        } else{
+            return 'name,email,password is required parameters';
+        }
     }
 
     /**
@@ -97,8 +131,18 @@ class UsersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy()
     {
         //
+        $id= auth()->user()->id;
+        $user= User::findOrFail($id);
+        if($user && $user->delete() ){
+            return $user->id.' user deleted';
+        } else{
+            return 'error in deleting';
+        }
+    }
+    public function logout(){
+        // $user->currentAccessToken()->delete();
     }
 }

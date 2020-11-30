@@ -22,13 +22,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 // without any auth
-Route::get('/get-users','App\Http\Controllers\Api\UsersController@index');
+
 
 /**
  *
  * just implementing for test
  */
-Route::get('/login','App\Http\Controllers\Api\UsersController@login');
+Route::post('/login','App\Http\Controllers\Api\UsersController@login');
 
 
 
@@ -42,9 +42,21 @@ Route::get('/login','App\Http\Controllers\Api\UsersController@login');
  * sanctum first verfy SPA request to send get request on  sanctum/csrf-cookie route
  */
 
-Route::middleware('auth:sanctum')->get('/protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
+// Route::middleware('auth:sanctum')->get('/protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
 
 
-Route::middleware('auth:sanctum')->post('/post-protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
+// Route::middleware('auth:sanctum')->post('/post-protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
+
+// Route::middleware('auth:sanctum')->get('/get-users','App\Http\Controllers\Api\UsersController@index');
+
+Route::post('/store-user','App\Http\Controllers\Api\UsersController@store');
 
 
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
+    Route::get('/get-users','App\Http\Controllers\Api\UsersController@index');
+    Route::post('/post-protected-route','App\Http\Controllers\Api\UsersController@protectedRoute');
+    Route::post('/update-auth-user','App\Http\Controllers\Api\UsersController@edit');
+    Route::post('/delete-auth-user','App\Http\Controllers\Api\UsersController@destroy');
+});
